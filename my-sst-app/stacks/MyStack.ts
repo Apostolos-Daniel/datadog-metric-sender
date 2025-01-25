@@ -13,6 +13,9 @@ export function API({ stack }: StackContext) {
     },
     nodejs: {
       sourcemap: true,
+      esbuild: {
+        external: ['datadog-lambda-js', 'dd-trace'],
+      },
     },
   });
 

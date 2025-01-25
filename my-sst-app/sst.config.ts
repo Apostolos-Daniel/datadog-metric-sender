@@ -4,17 +4,6 @@ import { FunctionProps, Stack } from 'sst/constructs';
 import { SecretsManager } from '@aws-sdk/client-secrets-manager';
 import { DatadogLambda, Datadog } from "datadog-cdk-constructs-v2";
 
-
-// export const DefaultFunctionProps: FunctionProps = {
-//   nodejs: {
-//     esbuild: {
-//       external: ['datadog-lambda-js', 'dd-trace'],
-//     },
-//   },
-//   runtime: 'nodejs20.x',
-//   memorySize: 512,
-// };
-
 export default {
   config(_input) {
     return {
@@ -25,14 +14,6 @@ export default {
   async stacks(app) {
     // Exclude from the function bundle
     // since they'll be loaded from the Layer
-
-    app.setDefaultFunctionProps({
-      nodejs: {
-        esbuild: {
-          external: ["datadog-lambda-js", "dd-trace"],
-        },
-      }
-    });
     app.stack(API);
 
     await app.finish();
@@ -65,10 +46,10 @@ export default {
     app.node.children.forEach((stack) => {
       if (stack instanceof Stack) {
         const datadogLambda = new DatadogLambda(stack, "datadogLambda", {
-          nodeLayerVersion: 108,
+          nodeLayerVersion: 118,
           addLayers: true,
           captureLambdaPayload: true,
-          extensionLayerVersion: 56,
+          extensionLayerVersion: 68,
           site: "datadoghq.eu",
           //apiKeySecret: secretData,
           apiKey: process.env.DD_API_KEY,
