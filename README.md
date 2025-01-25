@@ -5,8 +5,9 @@
 3. `npx cdk deploy`
 4. `cd ..`
 5. `cd my-sst-app`
-6. `npm sst deploy -stage test`
-7. Hit the two endpoints, e.g. `curl https://<your-api-id>.execute-api.eu-west-1.amazonaws.com/prod/` for CDK and `curl https://<your-api-id>.execute-api.eu-west-1.amazonaws.com` for SST
+6. `pnpm install`
+7. `pnpm sst deploy --stage test`
+8. Hit the two endpoints, e.g. `curl https://<your-api-id>.execute-api.eu-west-1.amazonaws.com/prod/` for CDK and `curl https://<your-api-id>.execute-api.eu-west-1.amazonaws.com` for SST
 
 ![alt text](image-1.png)
 
@@ -34,7 +35,6 @@ For the CDK stack in this repo, the Lambda configuration looks very similar, but
 The difference is how the Lambda is packaged and deployed.
 
 ![alt text](image-9.png)
-
 
 ![alt text](image-10.png)
 

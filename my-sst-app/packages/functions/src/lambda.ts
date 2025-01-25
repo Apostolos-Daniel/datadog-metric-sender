@@ -1,5 +1,6 @@
 // import { ApiHandler } from 'sst/node/api';
 import { sendDistributionMetric } from "datadog-lambda-js";
+import { sendMetric } from "./instrumentation";
 
 export const handler = async (event: any) => {
   const metricName = "custom.test.metric.sendDistributionMetric";
@@ -10,7 +11,8 @@ export const handler = async (event: any) => {
 
   try {
     // Send the custom metric to Datadog
-    sendDistributionMetric(metricName, metricValue, ...tags);
+    sendMetric(metricName, metricValue, ...tags);
+
     console.log("Metric sent successfully");
   } catch (error) {
     console.error("Failed to send metric", error);

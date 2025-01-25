@@ -1,19 +1,9 @@
 import { SSTConfig } from "sst";
 import { API } from "./stacks/MyStack";
-import { FunctionProps, Stack } from 'sst/constructs';
-import { SecretsManager } from '@aws-sdk/client-secrets-manager';
+import { FunctionProps, Stack } from "sst/constructs";
+import { SecretsManager } from "@aws-sdk/client-secrets-manager";
 import { DatadogLambda, Datadog } from "datadog-cdk-constructs-v2";
-
-
-// export const DefaultFunctionProps: FunctionProps = {
-//   nodejs: {
-//     esbuild: {
-//       external: ['datadog-lambda-js', 'dd-trace'],
-//     },
-//   },
-//   runtime: 'nodejs20.x',
-//   memorySize: 512,
-// };
+const ddPlugin = require("dd-trace/esbuild");
 
 export default {
   config(_input) {
@@ -29,9 +19,30 @@ export default {
     app.setDefaultFunctionProps({
       nodejs: {
         esbuild: {
-          external: ["datadog-lambda-js", "dd-trace"],
+          bundle: true,
+          minify: true,
+          external: [
+            "@datadog/native-metrics",
+
+            // required if you use profiling
+            "@datadog/pprof",
+
+            // required if you use Datadog security features
+            "@datadog/native-appsec",
+            "@datadog/native-iast-taint-tracking",
+            "@datadog/native-iast-rewriter",
+
+            // required if you encounter graphql errors during the build step
+            "graphql/language/visitor",
+            "graphql/language/printer",
+            "graphql/utilities",
+            "@aws-sdk/client-sqs",
+          ],
+          platform: "node",
+          target: ["node20"],
+          plugins: [ddPlugin],
         },
-      }
+      },
     });
     app.stack(API);
 
@@ -44,31 +55,34 @@ export default {
     let apiKeySecretValue: string | undefined;
 
     const secretsManager = new SecretsManager({
-      region: 'eu-west-1',
+      region: "eu-west-1",
     });
 
     let secretData: any;
     try {
       const secretData = await secretsManager.getSecretValue({
-        SecretId: 'DatadogApiKey',
+        SecretId: "DatadogApiKey",
       });
-      if ('SecretString' in secretData) {
+      if ("SecretString" in secretData) {
         apiKeySecretValue = secretData.SecretString;
       } else if (secretData.SecretBinary instanceof Buffer) {
-        apiKeySecretValue = secretData.SecretBinary.toString('ascii');
+        apiKeySecretValue = secretData.SecretBinary.toString("ascii");
       }
     } catch (error) {
-      console.error('Error retrieving Datadog API key from Secrets Manager:', error);
+      console.error(
+        "Error retrieving Datadog API key from Secrets Manager:",
+        error
+      );
     }
 
     // Attach the Datadog construct to each stack
     app.node.children.forEach((stack) => {
       if (stack instanceof Stack) {
         const datadogLambda = new DatadogLambda(stack, "datadogLambda", {
-          nodeLayerVersion: 108,
+          nodeLayerVersion: 118,
           addLayers: true,
           captureLambdaPayload: true,
-          extensionLayerVersion: 56,
+          extensionLayerVersion: 68,
           site: "datadoghq.eu",
           //apiKeySecret: secretData,
           apiKey: process.env.DD_API_KEY,
@@ -84,7 +98,5 @@ export default {
         datadogLambda.addLambdaFunctions(stack.getAllFunctions());
       }
     });
-  }
-
-  
+  },
 } satisfies SSTConfig;
