@@ -43,6 +43,8 @@ Note how the handler in both cases is set to `/opt/nodejs/node_modules/datadog-l
 There is documentation [here](https://docs.datadoghq.com/serverless/guide/serverless_tracing_and_bundlers/#aws-cdk--esbuild) that suggesets how to confiugre `esbuild` but this is not implemented in this repo (nor have I tried it).
 
 
+## Resolution
+
 It turns out that when you set default function props for a stack for `nodejs`, sst replaces the `nodejs` props set in the `sst.config.ts` file.
 
 In the `sst.config.ts` file, we have set 
